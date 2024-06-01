@@ -1,0 +1,71 @@
+import telebot
+import requests
+from PIL import Image
+import torch
+from torchvision import transforms
+from torchvision.models import resnet50
+import torchvision.transforms.functional as TFwh
+import os
+
+
+from transformers import pipeline
+image_to_text = pipeline("image-to-text", model="nlpconnect/vit-gpt2-image-captioning")
+
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
+bot = telebot.TeleBot('6289630903:AAFIzetHbpT0dU5dmhQN77chiAAKA-Tu30E')
+
+# Load the pre-trained ResNet-50 model
+model = resnet50(pretrained=True)
+model.eval()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+# Image preprocessing transformations
+preprocess = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+
+@bot.message_handler(commands=['start', 'help'])
+def handle_start_help(message):
+    bot.reply_to(message, "Welcome to the Image Caption Bot! Please send me an image and I will generate a caption for it.")
+
+@bot.message_handler(content_types=['photo'])
+def handle_image(message):
+    # Get the photo file ID from the message
+    file_id = message.photo[-1].file_id
+
+    # Get the file path for the photo
+    file_info = bot.get_file(file_id)
+    file_path = file_info.file_path
+
+    # Download the photo
+    downloaded_file = requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_path}')
+
+    # Save the photo locally
+    photo_path = 'temp_photo.jpg'
+    with open(photo_path, 'wb') as f:
+        f.write(downloaded_file.content)
+
+    # Preprocess the image
+    image = Image.open(photo_path).convert("RGB")
+    image = preprocess(image)
+    image = image.unsqueeze(0).to(device)
+
+    # Generate caption
+    with torch.no_grad():
+        features = model(image)
+        
+        caption=image_to_text(photo_path)
+        print(type(caption))
+        #caption ="clock tower towering over a city"
+
+    # Send the caption back to the user
+    bot.reply_to(message, caption[0]["generated_text"])
+
+    # Clean up the temporary photo file
+    os.remove(photo_path)
+
+# Start the bot
+bot.polling()
