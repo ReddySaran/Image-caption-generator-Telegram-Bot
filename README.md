@@ -46,5 +46,8 @@ Acknowledgments:
 --> Python Telegram Bot API for the Telegram bot framework.
 
 Output Images:
-![Uploading Photos 01-06-2024 08_37_48.png…]()
+![Photos 01-06-2024 08_37_48](https://github.com/ReddySaran/Image-caption-generator-Telegram-Bot/assets/116064723/15fd99f4-5ae5-4cf0-ba5b-c59a0b636ab9)
+
+
+![Telegram Web and 3 more pages - Personal - Microsoft​ Edge 01-06-2024 08_44_44](https://github.com/ReddySaran/Image-caption-generator-Telegram-Bot/assets/116064723/2db91d67-b82e-4d88-857f-7230ac067389)
 
